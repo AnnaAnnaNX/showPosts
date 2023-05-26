@@ -8,15 +8,17 @@
         @next="nextArticle"
         :arrayLength="formattedList.length"
       />
-      <h3>Список статей</h3>
-      <div
-        v-for="article in formattedList"
-        :key="article.id"
-      >
-        <div @click="() => {selectedArticle = article; keyForRender++;}">
-          {{ formatTitle(article.id, article.title) }}
+      <div style="max-width: 700px; margin: auto;">
+        <h3 class="text-center">Список статей</h3>
+        <div
+          v-for="article in formattedList"
+          :key="article.id"
+        >
+          <span @click="() => selectArticle(article)">
+            {{ formatTitle(article.id, article.title) }}
+            <v-icon v-if="article.visited">mdi-check</v-icon>
+          </span>
         </div>
-        <!-- <router-link :to="`/article/${article.id}`">{{ article.title }} {{ article.visited ? "(visited)" : "" }}</router-link> -->
       </div>
     </v-responsive>
   </v-container>
@@ -26,6 +28,7 @@
 import { 
   getRequest,
   getIdsFromLocalStorage,
+  setIdToLocalStorage,
   formatTitle
  } from '@/helpers';
 import Modal from './Modal.vue';
@@ -70,17 +73,23 @@ export default {
     }
   },
   methods: {
-    // selectArticle: function (article) {
-    //   this.title = article.title;
-    //   this.body = article.body;
-    // },
+    selectArticle: function (article, needRender = true) {
+      this.selectedArticle = article;
+      setIdToLocalStorage(article.id);
+      if (this.formattedList[article.index]) {
+        this.formattedList[article.index].visited = true;
+      }
+      if (needRender) {
+        this.keyForRender++;
+      }
+    },
     prevArticle() {
       if (!this.selectedArticle) {
         return;
       }
       let index = this.selectedArticle.index - 1;
       if (index >= 0) {
-        this.selectedArticle = this.formattedList[index];
+        this.selectArticle(this.formattedList[index], false);
       }
     },
     nextArticle() {
@@ -89,7 +98,7 @@ export default {
       }
       let index = this.selectedArticle.index + 1;
       if (index < this.formattedList.length) {
-        this.selectedArticle = this.formattedList[index];
+        this.selectArticle(this.formattedList[index], false);
       }
     },
   }
