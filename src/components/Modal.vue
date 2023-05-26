@@ -3,6 +3,7 @@
     <v-dialog
         v-model="dialog"
         width="auto"
+        @keydown.enter="handlePrevClick"
       >
         <v-card v-if="article">
           <v-card-title class="d-flex justify-space-between mb-6 bg-primary">
@@ -12,9 +13,9 @@
           <v-card-subtitle>{{ article.author }}</v-card-subtitle>
           <v-card-text>{{ article.body }}</v-card-text>
           <v-card-actions>
-            <v-btn color="primary" @click="handlePrevClick" :disabled="disabledPrevButton">Prev article</v-btn>
+            <v-btn color="primary" @click="handlePrevClick" :disabled="disabledPrevButton">Prev</v-btn>
             <v-spacer />
-            <v-btn color="primary" @click="handleNextClick" :disabled="disabledNextButton">Next article</v-btn>
+            <v-btn color="primary" @click="handleNextClick" :disabled="disabledNextButton">Next</v-btn>
           </v-card-actions>
         </v-card>
     </v-dialog>
@@ -23,6 +24,7 @@
 
 <script>
 import { formatTitle } from '@/helpers';
+import { keyCodes } from '@/consts';
 
 export default {
   name: 'Modal',
@@ -39,6 +41,12 @@ export default {
       formatTitle
     }
   },
+  created() {
+    window.addEventListener('keyup', this.onKeyPress);
+  },
+  beforeDestroy() {
+      window.removeEventListener('keyup', this.onKeyPress);
+  },
   computed: {
     disabledPrevButton() {
       return this.article.index <= 0;
@@ -54,6 +62,12 @@ export default {
     handleNextClick() {
       this.$emit('next');
     },
+    onKeyPress(e) {
+      switch (e.which) {
+        case keyCodes.left: this.$emit('prev'); break;
+        case keyCodes.right: this.$emit('next'); break;
+      }
+    }
   }
 }
 </script>
